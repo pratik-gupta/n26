@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import com.n26.model.Statistics;
 import com.n26.model.Transactions;
 import com.n26.validation.factories.RequestValidatorFactory;
+import org.springframework.scheduling.annotation.Scheduled;
 /**
  * Service to hand transactions realted business logic.
  * @author Pratik
@@ -76,5 +77,12 @@ public class TransactionService {
 			tranactionsList.clear();
 		}
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+	}
+	
+		@Scheduled(fixedRate = 250)
+		private void cleanOldTransaction() {
+		synchronized (tranactionsList) {
+			tranactionsList.removeIf(trx -> (Instant.now().getEpochSecond()- trx.getTimestamp().getEpochSecond()) > statisticInterval);
+		}
 	}
 }
